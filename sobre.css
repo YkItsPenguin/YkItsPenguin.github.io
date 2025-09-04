@@ -2,3 +2,19 @@ body{
     font-family: "papyrus", "comic sans", sans-serif;
     color: slategray;
 }
+
+h1{
+    background-color: #E1EDF2;
+}
+
+h2{
+    border-bottom: 2px solid black;
+}
+
+figure{
+    text-align: center;
+    background-color: whitesmoke;
+    border: 1px solid lightgray;
+}
+
+
