@@ -17,4 +17,12 @@ figure{
     border: 1px solid lightgray;
 }
 
+figcaption{
+    margin-top: 10px;
+}
+
+figure img{
+    width: 800px;
+}
+
 
