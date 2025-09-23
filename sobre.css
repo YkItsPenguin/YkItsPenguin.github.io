@@ -39,3 +39,17 @@ figure img{
     margin-left: auto;
     margin-right: auto;
 }
+.logo-littlecourses{
+    width:300px;
+    margin-left: auto;
+    margin-right: auto;
+}
+.titulo{
+    padding: 10px;
+    font-size: 32px;
+    background-color:beige;
+}
+
+h2{
+    border-bottom: 2px solid black;
+}
