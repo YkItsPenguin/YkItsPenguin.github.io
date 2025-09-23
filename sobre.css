@@ -29,5 +29,13 @@ figcaption{
 figure img{
     width: 800px;
 }
-
-
+.matriz-littlecourses{
+    width: 550px;
+    margin-left: auto;
+    margin-right: auto;
+}
+.fundadores-littlecourses{
+    width: 275px;
+    margin-left: auto;
+    margin-right: auto;
+}
