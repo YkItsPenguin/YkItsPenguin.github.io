@@ -53,3 +53,18 @@ figure img{
 h2{
     border-bottom: 2px solid black;
 }
+.contato__subtitulo{
+    display: inline;
+}
+.contato__info{
+    margin: 16px 0 24px;
+    padding-left: 32px;
+}
+.contato__info-titulo,
+.contato__info-descrição{
+    display: inline;
+}
+
+.contato__info-descricao{
+    margin-left: 10px;
+}
