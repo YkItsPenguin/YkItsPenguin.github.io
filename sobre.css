@@ -29,16 +29,19 @@ figcaption{
 figure img{
     width: 800px;
 }
+
 .matriz-littlecourses{
     width: 550px;
     margin-left: auto;
     margin-right: auto;
 }
+
 .fundadores-littlecourses{
     width: 275px;
     margin-left: auto;
     margin-right: auto;
 }
+
 .logo-littlecourses{
     width:300px;
     margin-left: auto;
@@ -56,10 +59,22 @@ h2{
 .contato__subtitulo{
     display: inline;
 }
+
+.contato__secao{
+    display: inline-block;
+    vertical-align: top;
+    margin-left: 16px;
+}
+
+.contato__info--telefone {
+    margin-left: 32px;
+}
+
 .contato__info{
     margin: 16px 0 24px;
     padding-left: 32px;
 }
+
 .contato__info-titulo,
 .contato__info-descrição{
     display: inline;
