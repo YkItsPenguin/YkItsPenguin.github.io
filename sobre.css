@@ -2,6 +2,10 @@ body{
     width: 940px;
     margin-left: auto;
     margin-right: auto;
+
+    font-size: 16px;
+    line-height: 1.5;
+
     font-family: "papyrus", "comic sans", sans-serif;
     color: slategray;
 }
@@ -82,4 +86,21 @@ h2{
 
 .contato__info-descricao{
     margin-left: 10px;
+}
+
+.rodape {
+    /* 1.75 x o tamanho da fonte do elemento pai. */
+    padding: 1.75 em 0;
+
+   /* 1.1 x o tamanho da fonte do BODY. */
+    font-size: 1.1rem;
+}
+
+.rodape__logo{
+    width: 6em;
+}
+
+.rodape__copyright{
+    display: inline;
+    margin-left: 1em;
 }
