@@ -1,10 +1,288 @@
-<html>
-    <head>
-          <title>FitQuest</title>
-          <h1> FitQuest </h1>
-          <h2> No pain no game! </h2>
-    </head>
-    <body>
-      
-    </body>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BlockKwnowledge</title>
+    <!-- Carrega Tailwind CSS para estilização rápida e responsiva -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        /* Estilos globais para a aparência de aplicativo (mobile-first) */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f7f7; /* Fundo cinza claro */
+        }
+        #app-container {
+            max-width: 480px; /* Limite de largura para simular um celular */
+            margin: 0 auto;
+            min-height: 100vh;
+            background-color: white; /* Conteúdo principal branco */
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        .app-button {
+            transition: transform 0.1s;
+        }
+        .app-button:active {
+            transform: scale(0.98);
+        }
+    </style>
+</head>
+<body>
+
+<div id="app-container">
+    <!-- O conteúdo do aplicativo será renderizado aqui -->
+    <div id="content"></div>
+</div>
+
+<script>
+    // Configurações e Dados
+    const APP_NAME = "BlockKnowledge";
+    const API_KEY = "" // Deixar vazio.
+    const MODEL_NAME = "gemini-2.5-flash-preview-09-2025";
+    const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent?key=${API_KEY}`;
+    
+    // --- Dados Mock (Seus "Achados" do Bairro) ---
+    // Beto, você pode editar estas informações a qualquer momento!
+    const achadosData = {
+        "Onde Comer": [
+            { id: 1, name: "Café da Esquina (Seu Café!)", photo: "https://placehold.co/150x150/1e40af/ffffff?text=CAFÉ", 
+              desc: "O melhor ponto de partida do bairro! Venha provar nosso pão de queijo da vovó e o expresso mais fresquinho da cidade.", 
+              address: "Rua Principal, 100 - Esquina Feliz" },
+            { id: 2, name: "Pizzaria do Zé", photo: "https://placehold.co/150x150/ca8a04/ffffff?text=PIZZA", 
+              desc: "A melhor pizza de massa fina da região, com ingredientes frescos e um forno a lenha de dar água na boca. Peça a de calabresa!", 
+              address: "Rua do Sabor, 50" },
+            { id: 5, name: "Restaurante Japonês Kisu", photo: "https://placehold.co/150x150/6d28d9/ffffff?text=SUSHI", 
+              desc: "Escondido, mas vale a pena! O combinado executivo é imbatível no almoço. Ambiente tranquilo e sofisticado.", 
+              address: "Travessa Secreta, 12" }
+        ],
+        "Lazer e Cultura": [
+            { id: 3, name: "Praça das Flores", photo: "https://placehold.co/150x150/10b981/ffffff?text=PRAÇA", 
+              desc: "Perfeita para um piquenique ou para ver o pôr do sol. Um achado verde no meio do bairro para relaxar.", 
+              address: "Avenida do Sol, s/n (Próximo à Igreja)" },
+            { id: 6, name: "Cine Arte Lumière", photo: "https://placehold.co/150x150/b91c1c/ffffff?text=CINEMA", 
+              desc: "Cinema de rua com programação alternativa. Ótimo lugar para quem busca filmes fora do circuito comercial.", 
+              address: "Rua dos Artistas, 33" }
+        ],
+        "Serviços Úteis": [
+            { id: 4, name: "Farmácia Mais Saúde", photo: "https://placehold.co/150x150/ef4444/ffffff?text=FARMA", 
+              desc: "Atendimento 24h e a equipe mais simpática do bairro. O Beto recomenda e diz que sempre tem desconto!", 
+              address: "Rua de Cima, 22" },
+            { id: 7, name: "Lavanderia Rápida", photo: "https://placehold.co/150x150/06b6d4/ffffff?text=LAVA", 
+              desc: "Serviço de emergência para roupas. Rápido, barato e abre aos domingos.", 
+              address: "Avenida Principal, 250" }
+        ]
+    };
+
+    let currentState = {
+        view: 'home', // 'home', 'list', 'detail'
+        currentCategory: null,
+        currentItem: null
+    };
+
+    const contentDiv = document.getElementById('content');
+
+    /**
+     * Alterna a visualização da tela do aplicativo
+     * @param {string} view - 'home', 'list', ou 'detail'
+     * @param {string|object} data - Dados adicionais (Categoria para 'list', Item para 'detail')
+     */
+    function navigateTo(view, data = null) {
+        currentState.view = view;
+        
+        switch (view) {
+            case 'home':
+                currentState.currentCategory = null;
+                currentState.currentItem = null;
+                renderHome();
+                break;
+            case 'list':
+                currentState.currentCategory = data;
+                renderList(data);
+                break;
+            case 'detail':
+                currentState.currentItem = data;
+                renderDetail(data);
+                break;
+        }
+        window.scrollTo(0, 0); // Rola para o topo ao mudar de tela
+    }
+
+    // 1. TELA INICIAL (A "Capa")
+    function renderHome() {
+        // Foto bonita do bairro (Placeholder)
+        const heroImage = "https://placehold.co/480x250/a855f7/ffffff?text=FOTO+DO+BAIRRO+(SUA+FOTO!)"; 
+        
+        // Renderiza a estrutura da tela inicial
+        contentDiv.innerHTML = `
+            <div class="p-0 pb-12">
+                
+                <!-- Header / Foto do Bairro -->
+                <div class="h-64 bg-cover bg-center rounded-b-xl shadow-lg relative" style="background-image: url('${heroImage}');">
+                    <div class="absolute inset-0 bg-blue-900 bg-opacity-40 flex items-center justify-center rounded-b-xl">
+                        <h1 class="text-4xl font-extrabold text-white text-shadow-lg tracking-wider">
+                            ${APP_NAME}
+                        </h1>
+                    </div>
+                </div>
+
+                <div class="p-6">
+                    <h2 class="text-2xl font-bold text-gray-800 mt-4 mb-2">Bem-vindo(a) ao Bairro!</h2>
+                    <p class="text-gray-600 mb-8">
+                        Seu guia rápido e selecionado de locais imperdíveis. Uma curadoria especial do pessoal do Café da Esquina! ☕
+                    </p>
+
+                    <!-- Botões para Categorias -->
+                    <div id="category-buttons" class="space-y-4">
+                        <!-- Os botões serão injetados pelo JS -->
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Adiciona os botões de categoria dinamicamente
+        const buttonsContainer = document.getElementById('category-buttons');
+        Object.keys(achadosData).forEach(category => {
+            const buttonHtml = document.createElement('button');
+            buttonHtml.className = 'app-button w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 rounded-xl shadow-md transition duration-150 ease-in-out text-lg';
+            buttonHtml.textContent = category;
+            buttonHtml.onclick = () => navigateTo('list', category);
+            buttonsContainer.appendChild(buttonHtml);
+        });
+    }
+
+    // 2. TELA DE LISTA (As Categorias)
+    function renderList(category) {
+        const items = achadosData[category] || [];
+
+        // Renderiza a estrutura da tela de lista
+        contentDiv.innerHTML = `
+            <header class="sticky top-0 bg-white shadow-md p-4 flex items-center z-10">
+                <button onclick="navigateTo('home')" class="text-blue-600 hover:text-blue-800 font-semibold mr-4 app-button">
+                    &larr; Voltar
+                </button>
+                <h1 class="text-xl font-bold text-gray-800 truncate">${category}</h1>
+            </header>
+
+            <div class="p-4 space-y-3 pb-8">
+                ${items.map(item => `
+                    <!-- Cartão do Item na Lista -->
+                    <div onclick="navigateTo('detail', ${item.id})" class="app-button flex items-center bg-white p-3 rounded-xl shadow hover:shadow-lg transition cursor-pointer border border-gray-100">
+                        <img src="${item.photo}" alt="${item.name}" class="w-16 h-16 object-cover rounded-lg mr-4 flex-shrink-0">
+                        <div>
+                            <p class="text-lg font-semibold text-gray-800">${item.name}</p>
+                            <p class="text-sm text-gray-500">${item.desc.substring(0, 50)}...</p>
+                        </div>
+                    </div>
+                `).join('')}
+                
+                ${items.length === 0 ? '<p class="text-center text-gray-500 mt-10">Nenhum achado cadastrado nesta categoria ainda.</p>' : ''}
+            </div>
+        `;
+    }
+
+    // 3. TELA DE DETALHES (A "Dica")
+    function renderDetail(itemId) {
+        // Encontra o item em todas as categorias
+        let item;
+        for (const key in achadosData) {
+            item = achadosData[key].find(i => i.id === itemId);
+            if (item) break;
+        }
+
+        if (!item) {
+            // Se não encontrar, volta para a lista ou home
+            return navigateTo('home');
+        }
+
+        // Renderiza a estrutura da tela de detalhes
+        contentDiv.innerHTML = `
+            <header class="sticky top-0 bg-white shadow-md p-4 flex items-center z-10">
+                <button onclick="navigateTo('list', currentState.currentCategory)" class="text-blue-600 hover:text-blue-800 font-semibold mr-4 app-button">
+                    &larr; Voltar
+                </button>
+                <h1 class="text-xl font-bold text-gray-800 truncate">Detalhes</h1>
+            </header>
+
+            <div class="p-0">
+                <!-- Foto (maior) -->
+                <img src="${item.photo}" alt="${item.name}" class="w-full h-64 object-cover">
+            </div>
+            
+            <div class="p-6">
+                <!-- Nome do Local -->
+                <h2 class="text-3xl font-bold text-gray-900 mb-2">${item.name}</h2>
+                
+                <!-- Descrição Curta (A "Dica") -->
+                <p class="text-xl text-gray-700 italic mb-6 border-l-4 border-blue-500 pl-4">${item.desc}</p>
+                
+                <hr class="my-6">
+
+                <!-- Endereço -->
+                <div class="flex items-center text-gray-600 mb-4">
+                    <span class="mr-3 text-xl" style="font-family: 'Font Awesome 5 Free';">&#xf3c5;</span> <!-- Ícone de Localização (placeholder) -->
+                    <div>
+                        <p class="font-bold text-lg text-gray-800">Onde Encontrar:</p>
+                        <p class="text-md">${item.address}</p>
+                    </div>
+                </div>
+
+                <!-- Botão de Ação (Apenas para efeito de UI) -->
+                <button class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-xl mt-6 shadow-md app-button">
+                    Ligar para o Local
+                </button>
+            </div>
+        `;
+    }
+
+    // Inicialização do Aplicativo
+    document.addEventListener('DOMContentLoaded', () => {
+        // Inicia a primeira tela
+        navigateTo('home');
+    });
+
+    // Função de Geração de Texto com Gemini (Não utilizada nos requisitos, mas deixada para expansão futura)
+    async function generateDescription(prompt) {
+        const payload = {
+            contents: [{ parts: [{ text: prompt }] }],
+            systemInstruction: {
+                parts: [{ text: "Você é um especialista em turismo local e escreve descrições curtas, amigáveis e envolventes sobre lugares. Responda em português." }]
+            },
+        };
+
+        try {
+            const response = await fetchWithRetry(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            const result = await response.json();
+            return result.candidates?.[0]?.content?.parts?.[0]?.text || "Erro ao gerar descrição.";
+        } catch (error) {
+            console.error("Erro ao chamar a API Gemini:", error);
+            return "Descrição gerada por IA temporariamente indisponível.";
+        }
+    }
+
+    // Função auxiliar para re-tentativas de API
+    async function fetchWithRetry(url, options, maxRetries = 3) {
+        let lastError = null;
+        for (let i = 0; i < maxRetries; i++) {
+            try {
+                const response = await fetch(url, options);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                return response;
+            } catch (error) {
+                lastError = error;
+                const delay = Math.pow(2, i) * 1000; // 1s, 2s, 4s
+                if (i < maxRetries - 1) await new Promise(resolve => setTimeout(resolve, delay));
+            }
+        }
+        throw lastError;
+    }
+
+</script>
+
+</body>
 </html>
